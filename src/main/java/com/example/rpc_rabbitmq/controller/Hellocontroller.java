@@ -22,19 +22,27 @@ public class Hellocontroller {
 	RabbitTemplate rabbitTemplate;
 
 	@GetMapping("/send")
-	public String hello(String message) {
-		Message msg = MessageBuilder.withBody(message.getBytes()).build();
-		//发送消息方法返回值
-		Message result = rabbitTemplate.sendAndReceive(RabbitConfig.RPC_EXCHANGE, RabbitConfig.MSG_QUEUE, msg);
-		if (result!=null) {
-			//发送消息的correlationId
-			String correlationId = msg.getMessageProperties().getCorrelationId();
-			String s = (String) result.getMessageProperties().getHeaders().get("spring_returned_message_correlation");
-			if (correlationId.equals(s)) {
-				System.out.println("我收到服务器的响应"+new String(result.getBody()));
-			}
-		}
-		return new String(result.getBody());
-
+	public void hello(String msg) {
+		Message message = MessageBuilder.withBody(msg.getBytes())
+				.setExpiration("10000")
+				.build();
+		rabbitTemplate.convertAndSend(RabbitConfig.EXCHANGE, RabbitConfig.QUEUE, message);
 	}
+
+//	@GetMapping("/send")
+//	public String hello(String message) {
+//		Message msg = MessageBuilder.withBody(message.getBytes()).build();
+//		//发送消息方法返回值
+//		Message result = rabbitTemplate.sendAndReceive(RabbitConfig.RPC_EXCHANGE, RabbitConfig.MSG_QUEUE, msg);
+//		if (result!=null) {
+//			//发送消息的correlationId
+//			String correlationId = msg.getMessageProperties().getCorrelationId();
+//			String s = (String) result.getMessageProperties().getHeaders().get("spring_returned_message_correlation");
+//			if (correlationId.equals(s)) {
+//				System.out.println("我收到服务器的响应"+new String(result.getBody()));
+//			}
+//		}
+//		return new String(result.getBody());
+//
+//	}
 }
